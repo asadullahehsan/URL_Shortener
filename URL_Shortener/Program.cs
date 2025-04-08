@@ -1,6 +1,7 @@
 using URL_Shortener.Models;
 using URL_Shortener;
 using URL_Shortener.Services;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,7 +12,15 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton<IUrlShorteningService, UrlShorteningService>();
+builder.Services.AddScoped<IUrlShorteningService, UrlShorteningService>();
+
+var connectionString =
+    builder.Configuration.GetConnectionString("UrlShortenerDatabase")
+        ?? throw new InvalidOperationException("Connection string"
+        + "'UrlShortenerDatabase' not found.");
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(connectionString));
 
 var app = builder.Build();
 

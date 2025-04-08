@@ -1,45 +1,72 @@
-﻿namespace URL_Shortener.Services;
+﻿using Microsoft.EntityFrameworkCore;
+using URL_Shortener.Models;
+
+namespace URL_Shortener.Services;
 
 public class UrlShorteningService : IUrlShorteningService
 {
-    private static readonly char[] _chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
-    
+    private readonly ApplicationDbContext _context;
+    public UrlShorteningService(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    private static readonly char[] _chars = ShortLinkSettings.Characters.ToCharArray();
+
     private Dictionary<string, string> UrlDict { get; set; } = [];
 
     private static string GenerateShortCode()
     {
-        return string.Create(5, _chars, (shortCode, charsState)
+        return string.Create(ShortLinkSettings.Length, _chars, (shortCode, charsState)
             => Random.Shared.GetItems(charsState, shortCode));
     }
 
     public string GetShortCode(string longUrl)
     {
-        foreach (var pair in UrlDict)
+        var shortenedUrl = _context.ShortenedUrls.SingleOrDefault(url => url.LongUrl == longUrl);
+
+        if (shortenedUrl != null)
         {
-            if (pair.Value == longUrl)
-            {
-                return pair.Key;
-            }
+            return shortenedUrl.Code;
         }
 
-        string shortCode;
+        string shortCode = string.Empty;
         while (true)
         {
             shortCode = GenerateShortCode();
-            if (UrlDict.TryAdd(shortCode, longUrl))
+
+            var sUrl = _context.ShortenedUrls.SingleOrDefault(url => url.Code == shortCode);
+            if (shortenedUrl != null)
+            {
+                continue;
+            }
+
+            _context.Add(new ShortenedUrl
+            {
+                Id = Guid.NewGuid(),
+                CreatedOnUtc = DateTime.Now,
+                Code = shortCode,
+                LongUrl = longUrl,
+                ShortUrl = "/" + shortCode
+            });
+
+            var res = _context.SaveChanges();
+
+            if (res > 0)
             {
                 break;
             }
         }
-
-        return shortCode;
+        var resUrl = _context.ShortenedUrls.SingleOrDefault(url => url.LongUrl == longUrl)!;
+        return resUrl.Code;
     }
 
     public string? GetLongUrl(string shortCode)
     {
-        if (UrlDict.TryGetValue(shortCode, out string? longUrl))
+        var shortenedUrl = _context.ShortenedUrls.SingleOrDefault(url => url.Code == shortCode);
+        if (shortenedUrl != null)
         {
-            return longUrl;
+            return shortenedUrl.LongUrl;
         }
 
         return default;
