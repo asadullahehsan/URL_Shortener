@@ -14,11 +14,11 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<ShortenedUrl>((builder) =>
         {
             builder
-            .Property(shortenedUrl => shortenedUrl.Code)
+            .Property(shortenedUrl => shortenedUrl.ShortCode)
             .HasMaxLength(ShortLinkSettings.Length);
 
             builder
-            .HasIndex(shortenedUrl => shortenedUrl.Code)
+            .HasIndex(shortenedUrl => shortenedUrl.ShortCode)
             .IsUnique();
         });
     }

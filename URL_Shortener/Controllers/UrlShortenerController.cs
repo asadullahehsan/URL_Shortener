@@ -1,6 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using URL_Shortener.Services;
 using Microsoft.AspNetCore.Mvc;
-using URL_Shortener.Services;
 
 namespace URL_Shortener.Controllers;
 
@@ -10,33 +9,34 @@ public class UrlShortenerController(IUrlShorteningService urlShorteningService) 
 {
     private readonly IUrlShorteningService urlShorteningService = urlShorteningService;
 
-    [HttpPost("/createshorturl")]
-    public IActionResult ShortenUrl([FromBody] string longUrl)
+    [HttpPost("/shorten")]
+    public async Task<IActionResult> ShortenUrl([FromBody] string longUrl)
     {
-        if (!Uri.TryCreate(longUrl, UriKind.Absolute, out _))
+        if (!Uri.TryCreate(longUrl, UriKind.Absolute, out var uriResult) || (uriResult.Scheme != Uri.UriSchemeHttp && uriResult.Scheme != Uri.UriSchemeHttps))
         {
-            return BadRequest("This is not a valid URL");
+            return BadRequest("This is not a valid URL. It should start with http:// or https://");
         }
 
-        return Ok(urlShorteningService.GetShortCode(longUrl));
+        try
+        {
+            return Ok(await urlShorteningService.ShortenUrl(longUrl));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, $"Internal server error: {ex.Message}");
+        }
     }
 
     [HttpGet("/{shortCode}")]
-    public IActionResult GetLongUrl(string shortCode)
+    public async Task<IActionResult> GetLongUrl(string shortCode)
     {
-        var longUrl = urlShorteningService.GetLongUrl(shortCode);
+        var longUrl = await urlShorteningService.GetLongUrl(shortCode);
 
-        if (longUrl is null)
+        if (longUrl == string.Empty)
         {
-            return NotFound();
+            return NotFound("No such URL exists.");
         }
 
         return Ok(longUrl);
-    }
-
-    [HttpGet("/samplepage")]
-    public IActionResult GetSamplePage()
-    {
-        return Ok("This is a sample page to test our URL shortener.");
     }
 }

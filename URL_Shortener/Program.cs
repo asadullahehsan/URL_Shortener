@@ -2,6 +2,7 @@ using URL_Shortener.Models;
 using URL_Shortener;
 using URL_Shortener.Services;
 using Microsoft.EntityFrameworkCore;
+using URL_Shortener.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddScoped<IUrlShortenerRepository, UrlShortenerRepository>();
 builder.Services.AddScoped<IUrlShorteningService, UrlShorteningService>();
 
 var connectionString =
@@ -21,6 +23,8 @@ var connectionString =
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
+
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 

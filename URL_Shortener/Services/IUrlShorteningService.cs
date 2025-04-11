@@ -2,6 +2,6 @@
 
 public interface IUrlShorteningService
 {
-    public string GetShortCode(string longUrl);
-    public string? GetLongUrl(string shortCode);
+    public Task<string> ShortenUrl(string longUrl);
+    public Task<string> GetLongUrl(string shortCode);
 }
