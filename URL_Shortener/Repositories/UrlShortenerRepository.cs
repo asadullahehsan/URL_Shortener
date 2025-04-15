@@ -1,6 +1,7 @@
 ﻿using URL_Shortener.Models;
 using URL_Shortener.Utilities;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace URL_Shortener.Repositories;
 
@@ -24,7 +25,7 @@ public class UrlShortenerRepository : IUrlShortenerRepository
 
         string salt = Guid.NewGuid().ToString("N").Substring(0, 5);
         string input = longUrl + salt;
-        string shortCode = UrlEncoder.GenerateShortCode(input);
+        string shortCode = UrlEncoder.GenerateShortCode(input, ShortLinkSettings.Length);
 
         ShortenedUrl shortenedUrl = new ShortenedUrl
         {
@@ -37,11 +38,13 @@ public class UrlShortenerRepository : IUrlShortenerRepository
         await _dbContext.AddAsync(shortenedUrl);
         await _dbContext.SaveChangesAsync();
         return shortCode;
-    }        
+    }
 
     public async Task<string> GetByShortCodeAsync(string shortCode)
     {
-        var res = await _dbContext.ShortenedUrls.SingleOrDefaultAsync(url => url.ShortCode == shortCode);
+        var res = await _dbContext.ShortenedUrls
+            .AsNoTracking()
+            .SingleOrDefaultAsync(url => url.ShortCode == shortCode);
 
         if (res == null)
         {

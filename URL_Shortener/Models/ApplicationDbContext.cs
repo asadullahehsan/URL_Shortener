@@ -20,6 +20,10 @@ public class ApplicationDbContext : DbContext
             builder
             .HasIndex(shortenedUrl => shortenedUrl.ShortCode)
             .IsUnique();
+
+            builder
+            .HasIndex(shortenedUrl => shortenedUrl.LongUrl)
+            .IsUnique();
         });
     }
 }

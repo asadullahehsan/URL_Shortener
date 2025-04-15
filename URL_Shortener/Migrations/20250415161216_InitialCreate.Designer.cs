@@ -12,8 +12,8 @@ using URL_Shortener.Models;
 namespace URL_Shortener.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250409153414_RemoveShortUrlProperty")]
-    partial class RemoveShortUrlProperty
+    [Migration("20250415161216_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -36,14 +36,17 @@ namespace URL_Shortener.Migrations
 
                     b.Property<string>("LongUrl")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ShortCode")
                         .IsRequired()
-                        .HasMaxLength(7)
-                        .HasColumnType("nvarchar(7)");
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("LongUrl")
+                        .IsUnique();
 
                     b.HasIndex("ShortCode")
                         .IsUnique();
