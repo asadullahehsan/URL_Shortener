@@ -1,7 +1,6 @@
 ﻿using URL_Shortener.Models;
 using URL_Shortener.Utilities;
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics;
 
 namespace URL_Shortener.Repositories;
 
@@ -52,5 +51,13 @@ public class UrlShortenerRepository : IUrlShortenerRepository
         }
 
         return res.LongUrl;
+    }
+
+    public async Task<IEnumerable<LongUrlAndShortUrl>> GetMyUrls()
+    {
+        var res = await _dbContext.ShortenedUrls
+            .Select(url => new LongUrlAndShortUrl(url.LongUrl, $"https://localhost:7208/{url.ShortCode}"))
+            .ToListAsync();
+        return res;
     }
 }

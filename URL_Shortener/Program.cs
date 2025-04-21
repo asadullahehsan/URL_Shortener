@@ -1,10 +1,22 @@
 using URL_Shortener.Models;
-using URL_Shortener;
 using URL_Shortener.Services;
-using Microsoft.EntityFrameworkCore;
 using URL_Shortener.Repositories;
+using Microsoft.EntityFrameworkCore;
+
+var UrlShortenerOrigins = "_urlShortenerOrigins";
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: UrlShortenerOrigins,
+                      policy =>
+                      {
+                          policy.WithOrigins("http://localhost:4200")
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                      });
+});
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -36,6 +48,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors(UrlShortenerOrigins);
 
 app.MapControllers();
 

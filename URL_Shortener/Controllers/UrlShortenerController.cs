@@ -7,9 +7,9 @@ namespace URL_Shortener.Controllers;
 [ApiController]
 public class UrlShortenerController(IUrlShorteningService urlShorteningService) : ControllerBase
 {
-    private readonly IUrlShorteningService urlShorteningService = urlShorteningService;
+    private readonly IUrlShorteningService _urlShorteningService = urlShorteningService;
 
-    [HttpPost("/shorten")]
+    [HttpPost("/shorten-url")]
     public async Task<IActionResult> ShortenUrl([FromBody] string longUrl)
     {
         if (!Uri.TryCreate(longUrl, UriKind.Absolute, out var uriResult) || (uriResult.Scheme != Uri.UriSchemeHttp && uriResult.Scheme != Uri.UriSchemeHttps))
@@ -19,7 +19,7 @@ public class UrlShortenerController(IUrlShorteningService urlShorteningService) 
 
         try
         {
-            return Ok(await urlShorteningService.ShortenUrl(longUrl));
+            return Ok(await _urlShorteningService.ShortenUrl(longUrl));
         }
         catch (Exception ex)
         {
@@ -30,7 +30,7 @@ public class UrlShortenerController(IUrlShorteningService urlShorteningService) 
     [HttpGet("/{shortCode}")]
     public async Task<IActionResult> GetLongUrl(string shortCode)
     {
-        var longUrl = await urlShorteningService.GetLongUrl(shortCode);
+        var longUrl = await _urlShorteningService.GetLongUrl(shortCode);
 
         if (longUrl == string.Empty)
         {
@@ -38,5 +38,12 @@ public class UrlShortenerController(IUrlShorteningService urlShorteningService) 
         }
 
         return Ok(longUrl);
+    }
+
+    [HttpGet("/my-urls")]
+    public async Task<IActionResult> GetAllUrls()
+    {
+        var res = await _urlShorteningService.GetMyUrls();
+        return Ok(res);
     }
 }

@@ -1,4 +1,5 @@
-﻿using URL_Shortener.Repositories;
+﻿using URL_Shortener.Models;
+using URL_Shortener.Repositories;
 
 namespace URL_Shortener.Services;
 
@@ -21,5 +22,11 @@ public class UrlShorteningService : IUrlShorteningService
     public async Task<string> GetLongUrl(string shortCode)
     {
         return await _urlShortenerRepository.GetByShortCodeAsync(shortCode);
+    }
+
+    public async Task<IEnumerable<LongUrlAndShortUrl>> GetMyUrls()
+    {
+        var res = await _urlShortenerRepository.GetMyUrls();
+        return res;
     }
 }
